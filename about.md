@@ -1,6 +1,6 @@
 ---
 layout: page
-title: About
+title: Tech cheat sheet
 permalink: /about/
 ---
 
