@@ -1,7 +1,7 @@
 ---
 layout: page
-title: about
-permalink: /about/
+title: VMware
+permalink: /vmware/
 ---
 
 Some information about you!
