@@ -2,11 +2,11 @@
 
 ## Basics 
 Connect / Disconnect to vCenter or ESXi
-~~~~
+```powershell
 Connect-VIServer -Server x.x.x.x
 Disconnect-VIServer
 Disconnect-VIServer -server *
-~~~~
+```
 
 Skip confirmation and without out  put 
 ~~~~
