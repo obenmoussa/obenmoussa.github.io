@@ -567,6 +567,43 @@ UCS-B(nxos)# clear counters interface fc1/20
 UCS-B(nxos)# clear counters interface fc1/21
 ```
 
+UCB-B Blade WILL_BOOT_FAULT when CPU is upgraded... the issue could be managed using the folliwing procedure   
+```
+
+UCS-A # scope server 1/1 (chassis 1 blade 1)
+UCS-A /chassis/server # scope boardcontroller
+UCS-A /chassis/server/boardcontroller # show image (look for the latest, currently: 11.0)
+UCS-A /chassis/server/boardcontroller # activate firmware 11.0 force 
+UCS-A /chassis/server/boardcontroller* # commit-buffer
+```
+
+Watch the FSM after this, the server will report when it’s done synchronising. There’s a small chance the server will report “OK” after this, but reset the CIMC anyway, just to be sure. Reset the CIMC using this procedure:
+
+```
+UCS-A /chassis/server/boardcontroller # exit
+UCS-A /chassis/server # scope CIMC
+UCS-A /chassis/server/cimc # reset
+UCS-A /chassis/server/cimc* # commit-buffer
+```
+
+Check if an Adapter is dead
+
+```
+ucs-B# connect adapter 1/5/1
+adapter 3/1/1 # connect
+127.8.3.17: No route to host        >>>> mean some issue with Adpater (Non-working)
+adapter 3/1/1 # exit
+
+ucs-B# connect adapter 1/5/2
+adapter 3/1/2 # connect
+adapter 3/1/2 (top):1#  >>>> working one
+
+```
+
+
+
+
+
 ## MDS
 
 MDS remove port Channel
