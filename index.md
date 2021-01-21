@@ -190,6 +190,26 @@ Create NFS Datastore
 New-Datastore -Nfs -VMHost $vmhost -Name $DSnfsName -Path $DSnfsPath -NfsHost $vmkpNFSserverIP
 ```
 
+## ESXi Custom Image Build witch latest patch
+
+```powershell
+add-esxsoftwaredepot C:\VMware-ESXi-depot.zip
+add-esxsoftwaredepot C:\Esxi-patchs.zip
+add-esxsoftwaredepot drivers.zip
+
+Get-EsxImageProfile | ft Name
+
+new-esximageprofile -Cloneprofile EsxImageProfile_added_above -Name EsxImageProfile_you_want
+
+
+Set-ESXImageProfile EsxImageProfile_you_want -SoftwarePackage (Get-ESXSoftwarePackage -Newest )
+
+Get-EsxImageProfile | ft Name 
+
+export-esximageprofile -imageprofile EsxImageProfile_you_want -Filepath .\EsxImageProfile_you_want.iso -Exporttoiso
+export-esximageprofile -imageprofile EsxImageProfile_you_want -Filepath .\EsxImageProfile_you_want.zip -Exporttobundle -NoSignatureCheck
+```
+
 ## loops 
 
 Wait until an ESXi is UP
@@ -461,17 +481,52 @@ iptables -A PREROUTING -t nat -i eth1 -p udp --dport 514 -j REDIRECT -d y.y.y.y 
 ```
 
 List redirection de port
-```
+```bash
 iptables -t nat --line-numbers -n -L
 ```
 
 Del regle nat
-```
+```bash
 iptables -t nat -D PREROUTING 1
 ```
+## NTP
 
+to list ALL NTP Peers
+```bash
+ntpq -pn
+```
+
+to Sync with specific server
+```bash
+ntpdate -d 37.187.122.11
+```
+
+Conf example
+```
+logconfig =syncevents +peerevents +sysevents +allclock
+logfile /var/log/ntpd.log
+
+driftfile /var/lib/ntp/drift
+
+restrict default kod nomodify notrap nopeer noquery
+restrict -6 default kod nomodify notrap nopeer noquery
+
+restrict 127.0.0.1
+restrict -6 ::1
+
+restrict 10.0.0.0 mask 255.0.0.0 nomodify notrap
+restrict 4.3.2.0 mask 255.255.252.0 nomodify notrap
+
+server 1.2.3.4
+```
+
+test NTP from Windows
+```
+w32tm /stripchart /computer:1.2.3.4
+```
 
 # Cisco
+
 ## UCS Fabric Interconnect 
 
 Factory reset UCS Fabric Interconnect
@@ -503,7 +558,6 @@ Verifying the Data Path for Fibre Channel End-Host Mode
 UCS-A /fabric-interconnect # connect nxos a
 UCS-A(nxos)# show npv flogi-table
 ```
-
 
 Clear Counters
 ```
@@ -590,6 +644,50 @@ show interface fc1/45 counters
 clear counters interface all clear counters interface fc1/45
 
 show log interface
+```
+
+When Enhanced zoning is enable configure a vSAN on one member... but it mandary to execute this command to save config on all members
+```
+copy running-config startup-config
+```
+
+Add new Zone on existing zoneset 
+```
+config t
+ 
+fcalias name ESX_hba_a VSAN 11
+member pwwn 10:00:00:xx:xx:xx:xx:xx
+exit
+ 
+zone name ESX_hba_a-DC1-3PAR-8200_0_0_1 VSAN 11
+member fcalias ESX_hba_a
+member fcalias DC1-3PAR-8200_0_0_1
+exit
+ 
+zone name ESX_hba_a-DC1-3PAR-8200_1_0_1 VSAN 11
+member fcalias ESX_hba_a
+member fcalias DC1-3PAR-8200_1_0_1
+exit
+ 
+zone name ESX_hba_a-DC2-3PAR-8200_0_0_1 VSAN 11
+member fcalias ESX_hba_a
+member fcalias DC2-3PAR-8200_0_0_1
+exit
+ 
+zone name ESX_hba_a-DC2-3PAR-8200_1_0_1 VSAN 11
+member fcalias ESX_hba_a
+member fcalias DC2-3PAR-8200_1_0_1
+exit
+ 
+zoneset name zoneset-fab1-3PAR-access VSAN 11
+member ESX_hba_a-DC1-3PAR-8200_0_0_1
+member ESX_hba_a-DC1-3PAR-8200_1_0_1
+member ESX_hba_a-DC2-3PAR-8200_0_0_1
+member ESX_hba_a-DC2-3PAR-8200_1_0_1
+exit
+ 
+zoneset activate name zoneset-fab1-3PAR-access VSAN 11
+zone commit vsan 11
 ```
 
 
