@@ -13,12 +13,12 @@ Disconnect-VIServer -server *
 ```
 
 Skip confirmation and without out  put 
-```
+``` powershell
 command -confirm:$false | out-null
 ```
 
 Most of commands need to interact with powershell objects
-```
+``` powershell
 $vmhost = get-vmhost "esxi.fqdn"
 $cluster = Get-VMHost -Location toto
 foreach ($vmhost in $cluster) {"commands on each ESXi => $vmhost"}
@@ -30,37 +30,37 @@ $VMsProd = get-cluster -name "prod" | get-vm
 ## Operations on VMs
 
 Add VM to DRS group
-```
+``` powershell
 Get-DrsClusterGroup -Cluster $Cluster -Name $DRSvmGroupName | Set-DrsClusterGroup -Add -VM $VMsToAdd;
 ```
 
 Create a Snapshot multiple VM per folder
-```
+``` powershell
 Get-Folder test-folder | Get-VM | New-Snapshot -Name init_snap
 ```
 
 Delete all Snapshot on multiple VMs
-```
+``` powershell
 foreach ($VM in $VMs){get-vm $VM | Get-Snapshot | Remove-Snapshot -Confirm:$false}
 ```
 
 Get VM restarted by HA
-```
+``` powershell
 Get-VIEvent -type warning | Where {$_.FullFormattedMessage -match "restarted"} |select ObjectName,CreatedTime,FullFormattedMessage |sort CreatedTime -Descending |export-CSV .\HA_VMs.csv
 ```
 
 Get VM by PortGroup
-```
+``` powershell
 Get-VM | where { ($ | Get-NetworkAdapter | where {$.networkname -match "vmlab-vlan705"})}
 ```
 
 remove VM network adatpters 
-```
+``` powershell
 $VM | get-NetworkAdapter | remove-NetworkAdapter -confirm:$false | out-null
 ```
 
 Convert VM to Template and Template to VM 
-```
+``` powershell
 $VM = get-vm "my_super_VM"
 Set-VM $VM -ToTemplate -confirm:$False
 
@@ -69,12 +69,12 @@ Set-Template -Template $Template -ToVM | out-null
 ```
 
 upgrade VM HW version
-```
+``` powershell
 foreach ($VM in $NewTemplates){get-vm $VM | Set-VM -Version v14 -Confirm:$false}
 ```
 
 Start / Stop guest VMs
-```
+``` powershell
 foreach ($VM in $NewTemplates){get-vm $VM | Stop-VMGuest -Confirm:$false}
 get-vm $VM | Start-VM -Confirm:$false | out-null
 ```
@@ -82,41 +82,41 @@ get-vm $VM | Start-VM -Confirm:$false | out-null
 ## Operations on ESXi
 
 Start / Stop SSH Service on ESXi
-```
+``` powershell
 Get-VMHostService -VMHost "esx* "| ?{$_.Label -eq "SSH"} | Stop-VMHostService -Confirm:$false
 Get-VMHostService -VMHost "esx*" | ?{$_.Label -eq "SSH"} | Start-VMHostService
 ```
 
 Activate Shell and remove warning of SSH service on ESXi
-```
+``` powershell
 $cluster = Get-VMHost -Location toto
 foreach ($vmhost in $cluster) {Get-VMHostService -VMHost $vmhost | Where-Object {$.Key -eq "TSM"} | Set-VMHostService -policy "on" -Confirm:$false ; Get-VMHostService -VMHost $vmhost | Where-Object {$.Key -eq "TSM"} | Restart-VMHostService -Confirm:$false ; Get-VMHost $vmhost| Set-VmHostAdvancedConfiguration -Name UserVars.SuppressShellWarning -Value 1 ;}
 ```
 
 Get Esx uuid
-```
+``` powershell
 Get-VMHost | Select Name,@{n="HostUUID";e={$_.ExtensionData.hardware.systeminfo.uuid}}
 ```
 
 Check Path selection Policy
-```
+``` powershell
 $AllESXHosts = Get-VMHost | Where { ($.ConnectionState -eq "Connected") -or ($.ConnectionState -eq "Maintenance")} | Sort Name
 Foreach ($esxhost in $AllESXHosts) { Get-VMhost $esxhost | Get-ScsiLun -LunType disk | Where { $_.MultipathPolicy -notlike "RoundRobin" } | Select CanonicalName,MultipathPolicy }
 ```
 
 Set Path Selection Policy to Round Robin
-```
+```powershell
 $AllESXHosts = Get-VMHost | Where { ($.ConnectionState -eq "Connected") -or ($.ConnectionState -eq "Maintenance")} | Sort Name
 Foreach ($esxhost in $AllESXHosts) { Get-VMhost $esxhost | Get-ScsiLun -LunType disk | Where { $_.MultipathPolicy -notlike "RoundRobin" } | Set-ScsiLun -MultipathPolicy "RoundRobin" }
 ```
 
 get Host name and host ID
-```
+```powershell
 Get-VMHost | Select-Object Id,Name
 ```
 
 Mounting the NFS datastore
-```
+```powershell
 $IPNas = "1.1.1.1"
 $DatastoreNFS = "DS-NFS"
 $NFSPath = "/volume/nfs_path"
@@ -124,44 +124,44 @@ New-Datastore -Nfs -VMHost $vmhost -Name $DatastoreNFS -Path $NFSpath -NfsHost $
 ```
 
 Set vSwitch0 MTU to 9000
-```
+```powershell
 $vSwitch = "vSwitch0"
 Get-VirtualSwitch -VMHost $vmhost -Name $vSwitch | Set-VirtualSwitch -mtu 9000 -Confirm:$false
 ```
 
 Set vmk0 mtu to 9000 (sometimes ESXi disconnect for several minutes)
-```
+```powershell
 Get-VMHost -name $vmhost | Get-VMHostNetworkAdapter -Name "vmk0" | Set-VMHostNetworkAdapter -mtu 9000 -Confirm:$false -ErrorAction Ignore 
 ```
 Rename Management Network 
-```
+```powershell
 Get-VMHost -name $vmhost | Get-VirtualPortGroup -Name "Management Network" | Set-VirtualPortGroup -Name $theNewName
 ```
 
 Disable override Nic Teaming policy for mgmt vmkernel (follow vSwitch policy)
-```
+```powershell
 $policy = Get-VirtualPortGroup -VMHost $vmhost -name "Management Network" | Get-NicTeamingPolicy;
 $policy | Set-NicTeamingPolicy -InheritFailoverOrder $true
 ```
 
 Create new PortGroup
-```
+```powershell
 Get-VirtualSwitch -VMhost $vmhost -Name $vSwitch | New-VirtualPortGroup -Name $pgname -vlanID $pgvLan
 ```
 
 Set vSwitch0 promiscuous mode at true 
-```
+```powershell
 $vmhost | Get-VirtualSwitch -Name "vswitch0" | Get-SecurityPolicy | Set-SecurityPolicy -AllowPromiscuous $true
 ```
 
 Update $vSwitch Nic Teaming to set vmnic0, vmnic1 active
-```
+```powershell
 $NetworkCard2 = $vmhost | Get-VMHostNetworkAdapter -name vmnic1
 Get-VirtualSwitch -VMHost $vmhost -Name $vSwitch | Add-VirtualSwitchPhysicalNetworkAdapter -VMHostPhysicalNic $NetworkCard2 -Confirm:$false
 ```
 
 Create new vmkernel for vMotion $vmkp in $vSwitch with IP $vmkpvMotionIP 
-```
+```powershell
 New-VMHostNetworkAdapter -VMHost $vmhost -PortGroup $vmkpvMotion -VirtualSwitch $vSwitch -IP $vmkpvMotionIP -SubnetMask $NetmaskvMotion -mtu 9000 -VMotionEnabled:$true
 
 $PGvMotion = Get-VirtualPortgroup -VMHost $vmhost -Name $vmkpvMotion -standard
@@ -170,7 +170,7 @@ Set-VirtualPortGroup -VirtualPortGroup $PGvMotion -VlanId $vmkpvMotionvLan
 ```
 
 Add vnics to DvSwitch 
-```
+```powershell
 $NetworkCard3 = $vmhost | Get-VMHostNetworkAdapter -name vmnic2
 $NetworkCard4 = $vmhost | Get-VMHostNetworkAdapter -name vmnic3
 
@@ -180,20 +180,20 @@ Get-VDSwitch -Name $DvSwitchName | Add-VDSwitchPhysicalNetworkAdapter -VMHostNet
 ```
 
 Rename a Datastore 
-```
+```powershell
 Get-VMHost $vmhost | get-datastore -name "datastore*" | set-datastore -name $DatastoreName 
 
 ```
 
 Create NFS Datastore
-```
+```powershell
 New-Datastore -Nfs -VMHost $vmhost -Name $DSnfsName -Path $DSnfsPath -NfsHost $vmkpNFSserverIP
 ```
 
 ## loops 
 
 Wait until an ESXi is UP
-```
+```powershell
 Write-Host("[i] Wainting until ESX reconnect ") -fore Green;
 start-sleep -s 15
 
@@ -212,61 +212,134 @@ until($ESXiFQDNconnected -eq "PoweredOn")
 
 # Ping subnet one line 
 
-```
+Using Powershell 
+```powershell
 $subnet="192.168.1."; for ($i=1; $i -lt 255; $i++){ if (Test-Connection -Count 1 -Quiet -ErrorAction SilentlyContinue $subnet$i){write-host "$subnet$i is used"} else {write-host "$subnet$i is available" -fore green} }
+```
+
+Using Bash 
+```bash
+SUBNET="192.168.1."; for i in {1..40};do if ping -c 1 -w 1 "$SUBNET$i" >/dev/null; then echo "$SUBNET$i alive"; else echo "$SUBNET$i dead"; fi ; done
 ```
 
 # ESXi Cli
 
 Get specific vib version 
-```
+```bash
 ssh to host 
 esxcli software vib list | grep nfnic
 esxcli software vib list | grep nenic
 ```
 
 Operation on Nics
-```
-Get firmware version
+```bash
+> Get firmware version
 esxcli network nic get -n vmnic
-list of all nics
+
+> list of all nics
 esxcfg-nics -l
-get detail of the nics
+
+> get detail of the nics
 ethtool -i vmnic4
+
+> To list information on the current vswitches and DVS’
+esxcfg-vswitch –l
+
+> To list information on the current vmk’s
+esxcfg-vmknic –l
+
+> To add a vSwitch named vSwitch0 to the server
+esxcfg-vswitch –a vSwitch0
+
+> To delete a vSwitch named vSwitch0 from server
+esxcfg-vswitch –d vSwitch0
+
+> To set Jumbo Frames on a vswitch and underlying vmnics
+esxcfg-vswitch –m 9000 vSwitch0
+
+> To add a port-group named Service Console to vSwitch0
+esxcfg-vswitch –A “Service Console” vSwitch0
+
+> To remove a port-group named Service Console from vSwitch0
+esxcfg-vswitch –D “Service Console” vSwitch0
+
+> To set a port-group named Service Console to user VLAN 102 on vSwitch0
+esxcfg-vswitch –p “Service Console” –v 102 vSwitch0
+
+> To see list of vmnics and the properties (MTU, etc.)
+esxcfg-nics –l
+
+> To remove the vmnic0 uplink from the DVS named myN1kDVS
+esxcfg-vswitch –Q vmnic0 –V [port#] myN1kDVS
+
+> To add the vmnic0 uplink to the DVS named myN1kDVS
+esxcfg-vswitch –P vmnic0 –V [port#] myN1kDVS
+
+> To add vmnic0 as an uplink to vSwitch0
+esxcfg-vswitch –L vmnic0 vSwitch0
+
+> To delete a vmk from the port-group on vSwitch
+esxcfg-vmknic –d –v xxx –s myN1kDVS
+
+> To add a vmk to the ESX server:
+esxcfg-vmknic –a –i x.x.x.x –n 255.255.255.0 –m 9000 “VMkernel”
+
+> To add a vmk with IP x.x.x.x/24 to the vSwitch with Jumbo Frames
+esxcfg-vmknic –a –i x.x.x.x –n 255.255.255.0 –m 9000 –s myN1kDVS
+
+> To set the jumbo frames on a vmk on a ESX server:
+esxcfg-vmknic –m 9000 –v xxx –s myN1kDVS
 ```
 
+Test MTU 9000 
+``` bash
+vmkping -d -s 8972 x.x.x.x
+```
+
+
+
+
 # Linux 
+
+## Bash
+
+Dig
+```bash
+dig +short example.com @nameserver
+dig -x XX.XX.XX.XX @8.8.8.8 +trace (reverse PTR)
+```
+
 ## Fail2Ban
 
 get fail2ban status of all jails
-```
+```bash
 fail2ban-client status
 ```
 
 get fail2ban status for particular one
-```
+```bash
 fail2ban-client status nginx-http-auth
 ```
 
 how to unbanip an ip
-```
+```bash
 fail2ban-client set nginx-http-auth unbanip 111.111.111.111
 ```
 
 ## Firewall-cmd
 
-```
-starting firewall ( enable au lancement du sys)
+```bash
 systemctl start firewalld.service
+systemctl enable firewalld.service
 firewall-cmd --state
 firewall-cmd --get-active-zones
 firewall-cmd --list-all
 firewall-cmd --list-all-zones
-assign interface to zone
+
 firewall-cmd --zone=home --change-interface=eth0
 firewall-cmd --set-default-zone=home
-firewall-cmd --permanent --zone=public --add-source=192.168.100.0/24
-firewall-cmd --permanent --zone=public --add-source=192.168.123.123/32
+firewall-cmd --permanent --zone=public --add-source=x.x.x.x/24
+firewall-cmd --permanent --zone=public --add-source=x.x.x.y/32
 firewall-cmd --permanent --zone=public --add-port=1-22/tcp
 firewall-cmd --permanent --zone=public --add-port=1-514/udp
 firewall-cmd --reload
@@ -275,37 +348,37 @@ firewall-cmd --reload
 ## LVM
 
 Extend Logical Volume
-```
+```bash
  #df -hT
  Filesystem              Type      Size  Used Avail Use% Mounted on
  /dev/mapper/centos-root ext4       17G  8.9G  7.0G  57% /
 ```
 
 In case a new disk added please run the following command to rescans all controllers, channels and luns
-```
+```bash
  #echo "- - -" > /sys/class/scsi_host/host0/scan
 ```
 In case the actual disk has been increased you need to list the devices
-```
+```bash
  #ls /sys/class/scsi_device/
  The output should be a list of device like the following
  1:0:0:0/ 2:0:0:0/
 ```
 
 Apply the following command to rescan the devices
-```
+```bash
  #echo 1 > /sys/class/scsi_device/1\:0\:0\:0/device/rescan
  #echo 1 > /sys/class/scsi_device/2\:0\:0\:0/device/rescan
 ```
 
 At this step verify if the OS see the new provisioned disk space using fdisk
-```
+```bash
  #fdisk -l
 ```
 
 Now we prepare the provisioned disk space to be used with LVM.
 In case the disk has been increased
-```
+```bash
 #fdisk /dev/sda
 Press p to print the partition table to identify the number of partitions. By default, there are 2: sda1 and  sda2.
 Press n to create a new primary partition.
@@ -319,7 +392,7 @@ Press w to write the changes to the partition table.
 ```
 
 In case new disk has been added
-```
+```bash
 #fdisk /dev/sdb
 Press p to print the partition table to identify the number of partitions. By default, there are 2: sda1 and  sda2.
 Press n to create a new primary partition.
@@ -338,51 +411,53 @@ The new partition is now created and ready to be added to LVM
 ```
 
 List volume groups
-```
- #vgdisplay
+```bash
+vgdisplay
 ```
 
 Extend the Volume Group above
-```
- #vgextend centos /dev/sda3
-  Volume group "centos" successfully extended
+```bash
+vgextend centos /dev/sda3
+  > Volume group "centos" successfully extended
 ```
 
 Using pvscan command should confirm the addition of the new PV to the Volume Group
-```
- #pvscan
+```bash
+pvscan
 
- #lvdisplay
+lvdisplay
 ``` 
 
 Next we extend the Logical volume
-```
- #lvextend /dev/centos/root /dev/sda3
+```bash
+lvextend /dev/centos/root /dev/sda3
 ```
 
 Final Step is to resize the file system so that it ca take in account the additional disk space
-```
- #resize2fs /dev/centos/root
- #df -h
+```bash
+resize2fs /dev/centos/root
+df -h
 ```
 
 ## Iptables
 
-Lister des regles iptables : -L lister des regles -n sans resolution dns -v pour les interfaces
-```
+-L : List iptables rules   
+-n : without resolution dns 
+-v : for all interfaces
+```bash
 iptables -nvL --line-numbers
 ```
 
-Ajout d'une regle dans une ligne précise : -I la chaine '2' pour la position de la regle -p protocole -s source -i interface -j
+add rule in specific line : -I la chaine '2' rule position -p protocole -s source -i interface -j action
 
-```
-iptables -I RH-Firewall-1-INPUT 2 -p all -s 1.1.1.0/16 -i eth4 -j ACCEPT
+```bash
+iptables -I fw-input 2 -p all -s 1.1.1.0/16 -i eth4 -j ACCEPT
 ```
 
 Redirection de port
-```
-iptables -A PREROUTING -t nat -i eth0 -p udp --dport 514 -j REDIRECT -d 10.1.3.74 --to-port 5514
-iptables -A PREROUTING -t nat -i eth1 -p udp --dport 514 -j REDIRECT -d 10.1.3.202 --to-port 1514
+```bash
+iptables -A PREROUTING -t nat -i eth0 -p udp --dport 514 -j REDIRECT -d x.x.x.x --to-port 5514
+iptables -A PREROUTING -t nat -i eth1 -p udp --dport 514 -j REDIRECT -d y.y.y.y --to-port 1514
 ```
 
 List redirection de port
