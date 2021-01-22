@@ -2,9 +2,11 @@
 
 Hello, this is my way to outsource my memory ^^ Before using any code or command make sure you understand what you are doing ;)
 
-# PowerCli / PowerShell
+# vSphere 
 
-## Basics 
+## PowerCli / PowerShell
+
+### Basics 
 Connect / Disconnect to vCenter or ESXi
 ``` powershell
 Connect-VIServer -Server x.x.x.x
@@ -27,7 +29,7 @@ $VMsProd = get-cluster -name "prod" | get-vm
 ```
 
 
-## Operations on VMs
+### Operations on VMs
 
 Add VM to DRS group
 ``` powershell
@@ -79,7 +81,7 @@ foreach ($VM in $NewTemplates){get-vm $VM | Stop-VMGuest -Confirm:$false}
 get-vm $VM | Start-VM -Confirm:$false | out-null
 ```
 
-## Operations on ESXi
+### Operations on ESXi
 
 Start / Stop SSH Service on ESXi
 ``` powershell
@@ -230,25 +232,44 @@ do{
 until($ESXiFQDNconnected -eq "PoweredOn")
 ```
 
-# Ping subnet one line 
+## Unlock Root VCSA Password 
 
-Using Powershell 
-```powershell
-$subnet="192.168.1."; for ($i=1; $i -lt 255; $i++){ if (Test-Connection -Count 1 -Quiet -ErrorAction SilentlyContinue $subnet$i){write-host "$subnet$i is used"} else {write-host "$subnet$i is available" -fore green} }
+Connect to Console 
+
+Command to check 
+```
+pam_tally2 --user root
 ```
 
-Using Bash 
-```bash
-SUBNET="192.168.1."; for i in {1..40};do if ping -c 1 -w 1 "$SUBNET$i" >/dev/null; then echo "$SUBNET$i alive"; else echo "$SUBNET$i dead"; fi ; done
+Command to unlock
+```
+pam_tally2 --user root --reset
 ```
 
-# ESXi Cli
+
+
+## ESXi Cli
 
 Get specific vib version 
 ```bash
 ssh to host 
 esxcli software vib list | grep nfnic
 esxcli software vib list | grep nenic
+```
+
+Install / Update VIB
+```bash
+esxcli software vib install -d /vmfs/volumes/Datastore/DirectoryName/PatchName.zip
+esxcli software vib update -d /vmfs/volumes/Datastore/DirectoryName/PatchName.zip
+esxcli software vib list
+esxcli –server=server_name software vib remove –vibname=name
+```
+
+Iperf Using ESXi
+```bash
+/usr/lib/vmware/vsan/bin/iperf
+/usr/lib/vmware/vsan/bin/iperf.copy -s -B [IPERF-SERVER-IP]
+esxcli network firewall set --enabled false
 ```
 
 Operation on Nics
@@ -602,8 +623,6 @@ adapter 3/1/2 (top):1#  >>>> working one
 
 
 
-
-
 ## MDS
 
 MDS remove port Channel
@@ -727,8 +746,9 @@ zoneset activate name zoneset-fab1-3PAR-access VSAN 11
 zone commit vsan 11
 ```
 
+# Windows 
 
-# Active Directory
+## Active Directory
 
 Check the replication health
 ```
@@ -749,6 +769,53 @@ Repadmin /syncall
 AD Get FSMO Roles
 ```
 netdom query fsmo
+```
+
+## PowerShell
+
+While until 
+```powershell
+$n=800; do{ Write-Host "vlan$n,$n"; $n++}Until($n -eq 850)
+```
+
+Enable Remote Desktop Connection
+```powershell
+netsh advfirewall firewall set rule group="remote desktop" new enable=Yes
+```
+Date
+```powershell
+$date = get-date -Format 'dd/MM/yyyy hh:mm:ss';
+```
+
+Windows-Update
+```powershell
+from CMD or Powershell
+wuauclt.exe /resetauthorization /detectnow
+wuauclt.exe /reportnow
+```
+
+
+remove Docker Container using Powershell
+```powershell
+$containers=docker ps -a; $count=$containers.count; for($n=1; $n -lt $count; $n++){$container=$containers[$n].Split(' ')[0]; docker rm $container}
+```
+
+set specific creationtime for a file
+```powershell
+(Get-ChildItem .\myfile.csv).CreationTime = '02/05/2018 12:42AM'
+```
+
+PowerShell grep
+```
+netstat -tano | Select-String "TIME_WAIT"
+```
+Get MTU Size
+```
+netsh interface ipv4 show subinterface
+```
+Change MTU Size
+```
+netsh interface ipv4 set subinterface “Local Area Connection” mtu=1458 store=persistent
 ```
 
 # Network route
@@ -823,4 +890,29 @@ git merge --no-ff Update-Repo-Structure
 git push origin master
 ```
 
+
+#FIO
+
+for IOPS measurment
+```
+fio --name=randrw --rw=randrw --direct=1 --iodepth=32 --ioengine=windowsaio --bs=4k --numjobs=1 --rwmixread=70 --size=1G --runtime=300 --group_reporting
+```
+
+for bandwith measurment 
+```
+fio --name=randrw --rw=randrw --direct=1 --iodepth=32 --ioengine=windowsaio --bs=1M --numjobs=1 --rwmixread=70 --size=1G --runtime=300 --group_reporting
+```
+
+
+# Ping subnet one line 
+
+Using Powershell 
+```powershell
+$subnet="192.168.1."; for ($i=1; $i -lt 255; $i++){ if (Test-Connection -Count 1 -Quiet -ErrorAction SilentlyContinue $subnet$i){write-host "$subnet$i is used"} else {write-host "$subnet$i is available" -fore green} }
+```
+
+Using Bash 
+```bash
+SUBNET="192.168.1."; for i in {1..40};do if ping -c 1 -w 1 "$SUBNET$i" >/dev/null; then echo "$SUBNET$i alive"; else echo "$SUBNET$i dead"; fi ; done
+```
 
