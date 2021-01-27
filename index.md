@@ -916,3 +916,44 @@ Using Bash
 SUBNET="192.168.1."; for i in {1..40};do if ping -c 1 -w 1 "$SUBNET$i" >/dev/null; then echo "$SUBNET$i alive"; else echo "$SUBNET$i dead"; fi ; done
 ```
 
+# Sqlite3
+
+Connect to sqlite3 db 
+```
+sqlite3 toto.db
+```
+
+To create a table
+```
+create table table (_id INTEGER, name TEXT, city TEXT); 
+```
+
+To list the tables
+```
+.tables
+```
+
+To list the tables content
+```
+select * from table;
+```
+
+To display the statement that is used to create a table
+```
+.schema table
+```
+
+To get the table_info,
+```
+PRAGMA TABLE_INFO(table);
+```
+
+To drop a table:
+```
+drop table table;
+```
+
+To exit sqlite3 cli 
+```
+.quit
+```
