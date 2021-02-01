@@ -350,6 +350,157 @@ dig +short example.com @nameserver
 dig -x XX.XX.XX.XX @8.8.8.8 +trace (reverse PTR)
 ```
 
+Add or Remove VIM Line number
+```bash
+:set nu
+:set nu!
+```
+
+Test if TCP Port is Open... if == 0 Connection successful if == 124 Port Closed on Remote Server
+```
+timeout 1 bash -c 'cat < /dev/null > /dev/tcp/google.com/80' ; echo $?
+```
+
+
+Using NC
+```
+nc -v x.x.x.x 8080
+nc -vu x.x.x.x 123 (udp)
+```
+
+Vim paste correctly
+```
+:set pastetoggle=
+```
+
+Vim tab as 2 space
+```
+echo "set tabstop=2" >> ~/.vimrc
+```
+
+Vim remove highlighting
+```
+:noh
+```
+
+Vim mass replacement
+```
+:%s/toreplace/by/g
+```
+
+Suppress bash history
+
+```
+history -c # remove current history
+history -w # save current history
+history -c && history -w # erase all history
+```
+
+find patern in files... -r or -R is recursive, -n is line number, and -w stands for match the whole word. -l (lower-case L) can be added to just give the file name of matching files.
+Along with these, --exclude, --include, --exclude-dir flags could be used for efficient searching:
+```
+grep -rnw '/path/to/somewhere/' -e 'pattern'
+```
+
+
+This will only search through those files which have .c or .h extensions:
+```
+grep --include=*.{c,h} -rnw '/path/to/somewhere/' -e "pattern"
+```
+
+This will exclude searching all the files ending with .o extension:
+```
+grep --exclude=*.o -rnw '/path/to/somewhere/' -e "pattern"
+```
+
+For directories it's possible to exclude a particular directory(ies) through --exclude-dir parameter. For example, this will exclude the dirs dir1/, dir2/ and all of them matching *.dst/:
+```
+grep --exclude-dir={dir1,dir2,*.dst} -rnw '/path/to/somewhere/' -e "pattern"
+```
+
+Get IP Public from Command line
+```
+curl ipinfo.io/ip
+```
+
+compress and uncompress files
+```
+tar czvf .tar.gz
+tar xzvf .tar.gz
+```
+
+get number of occurance in a file
+```
+grep "yo man" /var/log/messages | wc -l
+```
+
+ls sort with date and time
+```
+ls -ltra --time-style=+"%Y %H:%M:%S"
+```
+
+remove .bak extension of files in the current directory
+
+```
+find -name "*.txt.bak" | sed -e "s/.bak//g" | xargs -I {} mv {}.bak {}
+```
+
+replace space ' ' by an underscore '_'
+```
+echo "hello world" | sed -e "s/ /_/g" >==> "hello_world"
+```
+
+execute command 10 times using xargs
+```
+seq 10 | xargs -I {} echo "hello {}"
+```
+
+append .bak to all .txt files
+```
+find -name "*.txt" | xargs -I {} mv {} {}.bak
+```
+
+using for loop append .bak to all .txt files
+```
+for file in *.txt ; do mv $file $file.bak ; done
+```
+
+remove .bak from all files
+```
+for file in *.txt.bak; do mv $file echo $file | sed -e "s/.bak//g"; done
+for file in *.txt.bak; do mv $file $(echo $file | sed -e "s/.bak//g"); done
+```
+
+file name with space
+```
+for file in *.mkv; do mv "${file}" $(echo $file | sed -E "s/toremove[[:space:]]+-[[:space:]]+//g"); done
+```
+
+test URL
+```
+curl -sSf http://example.org > /dev/null
+```
+download with Curl
+```
+curl -O http://url.com
+curl -o taglist.zip http://www.vim.org/scripts/download_script.php?src_id=7701
+```
+
+delete file occurrences
+```
+find . -type f -name "*DS_Store" -delete 
+```
+cp file with current date
+```
+cp /etc/ntp.conf /etc/ntp.conf.bak.`date +%d%m%y`
+```
+
+Sort IP using BASH
+```
+cat ip.txt | sort -n -t . -k 1,1 -k 2,2 -k 3,3 -k 4,4
+```
+
+
 ## Fail2Ban
 
 get fail2ban status of all jails
@@ -794,6 +945,10 @@ wuauclt.exe /resetauthorization /detectnow
 wuauclt.exe /reportnow
 ```
 
+Activate Telnet Client
+```
+dism /online /Enable-Feature /FeatureName:TelnetClient
+```
 
 remove Docker Container using Powershell
 ```powershell
