@@ -950,10 +950,7 @@ Activate Telnet Client
 dism /online /Enable-Feature /FeatureName:TelnetClient
 ```
 
-remove Docker Container using Powershell
-```powershell
-$containers=docker ps -a; $count=$containers.count; for($n=1; $n -lt $count; $n++){$container=$containers[$n].Split(' ')[0]; docker rm $container}
-```
+
 
 set specific creationtime for a file
 ```powershell
@@ -972,6 +969,18 @@ Change MTU Size
 ```
 netsh interface ipv4 set subinterface “Local Area Connection” mtu=1458 store=persistent
 ```
+
+# Docker 
+
+remove Docker Container using Powershell
+```powershell
+$containers=docker ps -a; $count=$containers.count; for($n=1; $n -lt $count; $n++){$container=$containers[$n].Split(' ')[0]; docker rm $container}
+```
+
+```
+docker container rm $(docker container ls –aq)
+```
+
 
 # Network route
 
