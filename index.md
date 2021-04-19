@@ -922,6 +922,12 @@ AD Get FSMO Roles
 netdom query fsmo
 ```
 
+Create multiple DNS entries 
+```
+$objs=Import-Csv .\dns.csv -Delimiter ";";
+foreach($obj in $objs){$vm =$obj.vm; $ip=$obj.ip; Add-DnsServerResourceRecordA -Name $vm -ZoneName "hds.cloud.local" -IPv4Address $ip -CreatePtr}
+```
+
 ## PowerShell
 
 While until 
