@@ -539,6 +539,12 @@ firewall-cmd --reload
 
 ## LVM
 
+Create Logical Volume using all available space 
+
+```
+lvcreate -l 100%FREE -n yourlv testvg 
+``` 
+
 Extend Logical Volume
 ```bash
  #df -hT
@@ -622,7 +628,7 @@ lvdisplay
 
 Next we extend the Logical volume
 ```bash
-lvextend /dev/centos/root /dev/sda3
+lvextend /dev/centos/root -l +100%FREE
 ```
 
 Final Step is to resize the file system so that it ca take in account the additional disk space
