@@ -931,7 +931,7 @@ netdom query fsmo
 Create multiple DNS entries 
 ```
 $objs=Import-Csv .\dns.csv -Delimiter ";";
-foreach($obj in $objs){$vm =$obj.vm; $ip=$obj.ip; Add-DnsServerResourceRecordA -Name $vm -ZoneName "hds.cloud.local" -IPv4Address $ip -CreatePtr}
+foreach($obj in $objs){$vm =$obj.vm; $ip=$obj.ip; Add-DnsServerResourceRecordA -Name $vm -ZoneName "zone.local" -IPv4Address $ip -CreatePtr}
 ```
 
 ## PowerShell
@@ -1244,3 +1244,7 @@ mysql -u [username] -p -h localhost [database] < db_backup.sql
 >Logout: 
 exit;
 ```
+
+# Ansible 
+
+
