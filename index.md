@@ -934,6 +934,34 @@ $objs=Import-Csv .\dns.csv -Delimiter ";";
 foreach($obj in $objs){$vm =$obj.vm; $ip=$obj.ip; Add-DnsServerResourceRecordA -Name $vm -ZoneName "zone.local" -IPv4Address $ip -CreatePtr}
 ```
 
+AD issue tombstone lifetime 8614
+most of the time Active directory is a VM and it take ESXi as time reference which is wrong... the Goal is to make the Primary AD use NTP server from internet 
+```
+W32tm /config /manualpeerlist:time.windows.com,0x1 /syncfromflags:manual /reliable:yes /update
+
+CMD
+w32time & net start w32time & W32tm /resync /rediscover
+```
+on the secondary AD 
+```
+w32tm /config /syncfromflags:domhier /update
+
+CMD
+w32time & net start w32time & W32tm /resync /rediscover
+```
+
+check no repliqution in queue... syncall successful... reboot Secondary, reboot primary 
+
+regedir key to check 
+```
+HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\W32Time\Parameters\Type has “NTP” as the value 
+HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\W32Time\Parameters\NtpServer has the value "0.time.windows.com,0x1 1. time.google.com ,0X1" 
+HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\W32Time\Config\AnnounceFlags has the value 0x5
+```
+https://social.technet.microsoft.com/wiki/contents/articles/50924.active-directory-time-synchronization.aspx
+
+
+
 ## PowerShell
 
 While until 
@@ -1245,6 +1273,11 @@ mysql -u [username] -p -h localhost [database] < db_backup.sql
 exit;
 ```
 
-# Ansible 
+# ILO
+
+```
+ </>hpiLO-> cd /map1
+ </map1>hpiLO-> reset
+```
 
 
