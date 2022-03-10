@@ -1056,10 +1056,10 @@ ip route add 10.38.0.0/16 via 192.168.100.1
 ## iperf
 ```
 Server 
-iperf3 -s -B 7.1.5.10
+iperf3 -s -B 1.1.1.1
 
 client
-iperf3 -c 1.1.1.1 -b 100G -M 9000 
+iperf3 -c 1.1.1.1 -b 100G -M 9000 -P 4
 ```
 
 
