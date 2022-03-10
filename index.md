@@ -272,6 +272,11 @@ Iperf Using ESXi
 esxcli network firewall set --enabled false
 ```
 
+get network interface error 
+```bash
+ esxcli network nic stats get -n vmnic9
+```
+
 Operation on Nics
 ```bash
 > Get firmware version
@@ -337,6 +342,17 @@ Test MTU 9000
 vmkping -d -s 8972 x.x.x.x
 ```
 
+Operation on Storage  
+``` bash
+> view scsi path statistics 
+esxcli storage core path stats get 
+
+> view boot partition and datastores available on host
+esxcli storage filesystem list 
+
+> view nfs3 datastores available on host
+esxcli storage nfs list 
+```
 
 
 
@@ -1022,7 +1038,7 @@ docker container rm $(docker container ls –aq)
 ```
 
 
-# Network route
+# Network 
 
 ## Windows
 ```
@@ -1036,6 +1052,16 @@ ip route add 192.168.1.0/24 dev eth0
 route add default gw 192.168.1.254 eth0
 ip route add 10.38.0.0/16 via 192.168.100.1
 ```
+
+## iperf
+```
+Server 
+iperf3 -s -B 7.1.5.10
+
+client
+iperf3 -c 1.1.1.1 -b 100G -M 9000 
+```
+
 
 # GIT
 ```
