@@ -716,9 +716,26 @@ server 1.2.3.4
 
 test NTP from Windows
 ```
-w32tm /stripchart /computer:1.2.3.4
+w32tm /stripchart /computer:1.2.3.4 
 ```
 
+configure NTP on Windows
+```
+w32tm /config /manualpeerlist:"time.windows.com" /syncfromflags:manual /reliable:yes /update
+net stop w32time 
+net start w32time 
+w32tm /resync
+```
+
+check NTP configuration on Windows
+```
+w32tm /query /configuration
+```
+
+check NTP status
+```
+w32tm /query /status
+```
 # Cisco
 
 ## UCS Fabric Interconnect 
