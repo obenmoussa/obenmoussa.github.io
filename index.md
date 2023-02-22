@@ -570,7 +570,7 @@ Extend Logical Volume
 
 In case a new disk added please run the following command to rescans all controllers, channels and luns
 ```bash
- #echo "- - -" > /sys/class/scsi_host/host0/scan
+for x in `ls /sys/class/scsi_host/`; do echo "- - -" > /sys/class/scsi_host/$x/scan ; done
 ```
 In case the actual disk has been increased you need to list the devices
 ```bash
@@ -651,6 +651,36 @@ Final Step is to resize the file system so that it ca take in account the additi
 ```bash
 resize2fs /dev/centos/root
 df -h
+```
+
+List PV usage 
+```bash
+pvs -o+pv_used
+```
+
+Move data to another PV
+```bash
+pvmove /dev/sdb1
+```
+
+remove PV from VG 
+```bash
+vgreduce vg01 /dev/sdb
+pvs -o+pv_used
+
+  PV         VG   Fmt  Attr PSize  PFree  Used  
+  /dev/sda2  cl   lvm2 a--  19.00g     0  19.00g
+  /dev/sdb        lvm2 ---  20.00g 20.00g     0 
+  /dev/sdc   vg01 lvm2 a--  20.00g 10.00g 10.00g
+```
+
+remove PV
+```bash
+pvremove /dev/sdb
+```
+check on which PV LV is located 
+```bash
+lvs -a -o+devices
 ```
 
 ## Iptables
