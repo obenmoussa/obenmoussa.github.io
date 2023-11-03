@@ -337,6 +337,38 @@ esxcfg-vmknic –a –i x.x.x.x –n 255.255.255.0 –m 9000 –s myN1kDVS
 esxcfg-vmknic –m 9000 –v xxx –s myN1kDVS
 ```
 
+Update VMnic order (to do from esxi shell) 
+```
+localcli --plugin-dir /usr/lib/vmware/esxcli/int/ deviceInternal alias list | grep vmnic
+
+
+localcli --plugin-dir /usr/lib/vmware/esxcli/int/ deviceInternal alias store --bus-type pci --alias vmnic0 --bus-address s00000008.00
+
+localcli --plugin-dir /usr/lib/vmware/esxcli/int/ deviceInternal alias store --bus-type pci --alias vmnic1 --bus-address s00000008.01
+
+localcli --plugin-dir /usr/lib/vmware/esxcli/int/ deviceInternal alias store --bus-type pci --alias vmnic2 --bus-address s00000001.00
+
+localcli --plugin-dir /usr/lib/vmware/esxcli/int/ deviceInternal alias store --bus-type pci --alias vmnic3 --bus-address s00000001.01
+
+localcli --plugin-dir /usr/lib/vmware/esxcli/int/ deviceInternal alias store --bus-type pci --alias vmnic4 --bus-address s00000001.02
+
+localcli --plugin-dir /usr/lib/vmware/esxcli/int/ deviceInternal alias store --bus-type pci --alias vmnic5 --bus-address s00000001.03
+
+
+localcli --plugin-dir /usr/lib/vmware/esxcli/int/ deviceInternal alias store --bus-type logical --alias vmnic0 --bus-address "pci#s00000008.00#0"
+
+localcli --plugin-dir /usr/lib/vmware/esxcli/int/ deviceInternal alias store --bus-type logical --alias vmnic1 --bus-address "pci#s00000008.01#0"
+
+localcli --plugin-dir /usr/lib/vmware/esxcli/int/ deviceInternal alias store --bus-type logical --alias vmnic2 --bus-address "pci#s00000001.00#0"
+
+localcli --plugin-dir /usr/lib/vmware/esxcli/int/ deviceInternal alias store --bus-type logical --alias vmnic3 --bus-address "pci#s00000001.01#0"
+
+localcli --plugin-dir /usr/lib/vmware/esxcli/int/ deviceInternal alias store --bus-type logical --alias vmnic4 --bus-address "pci#s00000001.02#0"
+
+localcli --plugin-dir /usr/lib/vmware/esxcli/int/ deviceInternal alias store --bus-type logical --alias vmnic5 --bus-address "pci#s00000001.03#0"
+```
+
+
 Test MTU 9000 
 ``` bash
 vmkping -d -s 8972 x.x.x.x
@@ -682,6 +714,25 @@ check on which PV LV is located
 ```bash
 lvs -a -o+devices
 ```
+
+increase partition (need parted + partx)
+
+```
+parted /dev/sdb print free
+parted /dev/sdb resizepart 1 100%
+partx -u /dev/sdb1
+```
+
+resize the PV 
+```
+pvresize /dev/sdb1 
+```
+
+resize the LV and file system "-r" 
+```
+lvextend -r -l +100%FREE /dev/bdd/bdd
+```
+
 
 ## Iptables
 
@@ -1192,6 +1243,20 @@ Using Bash
 ```bash
 SUBNET="192.168.1."; for i in {1..40};do if ping -c 1 -w 1 "$SUBNET$i" >/dev/null; then echo "$SUBNET$i alive"; else echo "$SUBNET$i dead"; fi ; done
 ```
+
+# ping with time 
+
+Using Powershell
+```powershell
+ping -t 8.8.8.8 | Foreach{"{0} - {1}" -f (Get-Date),$_}
+```
+
+
+Using Bash 
+```bash
+ping 10.0.0.1 | while read line; do echo `date` - $line; done
+```
+
 
 # Sqlite3
 
