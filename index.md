@@ -733,6 +733,13 @@ resize the LV and file system "-r"
 lvextend -r -l +100%FREE /dev/bdd/bdd
 ```
 
+resolv No space left on device
+```
+lsof / | grep deleted
+
+then restart less important service to free some space. 
+```
+
 
 ## Iptables
 
