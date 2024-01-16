@@ -706,10 +706,15 @@ pvs -o+pv_used
   /dev/sdc   vg01 lvm2 a--  20.00g 10.00g 10.00g
 ```
 
-remove PV
+remove PV and disk from vmware 
 ```bash
 pvremove /dev/sdb
+echo "1" > /sys/block/sdb/device/delete
+
+# disk can be removed from VMware 
 ```
+
+
 check on which PV LV is located 
 ```bash
 lvs -a -o+devices
