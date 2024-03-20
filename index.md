@@ -1235,12 +1235,12 @@ git push origin master
 
 for IOPS measurment
 ```
-fio --name=randrw --rw=randrw --direct=1 --iodepth=32 --ioengine=windowsaio --bs=4k --numjobs=1 --rwmixread=70 --size=1G --runtime=300 --group_reporting
+fio --name=randrw --rw=randrw --direct=1 --iodepth=32 --ioengine=windowsaio --bs=4k --numjobs=1 --rwmixread=70 --size=1G --runtime=300 --group_reporting --filename=E\:\fio\test
 ```
 
 for bandwith measurment 
 ```
-fio --name=randrw --rw=randrw --direct=1 --iodepth=32 --ioengine=windowsaio --bs=1M --numjobs=1 --rwmixread=70 --size=1G --runtime=300 --group_reporting
+fio --name=randrw --rw=randrw --direct=1 --iodepth=32 --ioengine=windowsaio --bs=1M --numjobs=1 --rwmixread=70 --size=1G --runtime=300 --group_reporting --filename=E\:\fio\test
 ```
 
 
