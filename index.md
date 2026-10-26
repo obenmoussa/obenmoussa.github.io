@@ -8,7 +8,7 @@ description: Architecte infrastructure et Cloud – virtualisation, automatisati
 
 **Architecte infrastructure & Cloud – SRE, Automatisation & IA agentique**
 
-`France` · [ouadii.benmoussa@gmail.com](mailto:ouadii.benmoussa@gmail.com) · [LinkedIn](https://www.linkedin.com/)
+`France` · [LinkedIn](https://www.linkedin.com/)
 
 ---
 
